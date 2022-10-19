@@ -9,7 +9,7 @@ import openpyxl
 diccionario_eventos={}
 clientes={}
 salas={}
-path='E:\fernando\programacion3'
+path='Documentos'
 eventos=()
 libro= openpyxl.Workbook()
 libro.iso_dates= True
@@ -118,7 +118,7 @@ while True:
                                            if fecha_actual + datetime.timedelta(days=+cant_dias) >= fechap: 
                                                print("Se debe hacer una reservacion al menos 2 dias antes de su evento")
                                            else:
-                                               clave=max(list(diccionario_eventos.keys()),default=0)+1
+                                               clave=max(list(diccionario_eventos.keys()),default=3)+1
                                                diccionario_eventos[clave] = eventos
                                      
                                     else:
@@ -162,7 +162,7 @@ while True:
             fecha_procesada=datetime.datetime.strptime(fecha_consulta, "%d/%m/%Y").date()
             
             print("*"*50)
-            print(f"**\tReporte del dia {fecha_procesada}\t **")
+            print(f"*\tReporte del dia {fecha_procesada}\t *")
             print("*"*50)
             print("no_sala     clave del clientes    Nombre del evento     Turno ")
             print("*"*50)
@@ -172,7 +172,7 @@ while True:
                     
                     print(valor[3],"          ",valor[4],"               ", valor[0],"                  ",valor[2])
 
-            print(f"**\t FIN DEL REPORTE \t **")
+            print(f"*\t FIN DEL REPORTE \t *")
             
         else:
             if reportes == "B":
@@ -191,7 +191,7 @@ while True:
                         hoja.cell(row=clave, column=4).value = valor[0]
                         hoja.cell(row=clave, column=5).value = valor[2]
                         
-                libro.save('libro_luna_de_pluton.xlsx')
+                libro.save('Reporte tabular.xlsx')
             else:
                 print("Seleccione una opción valida")
                 
