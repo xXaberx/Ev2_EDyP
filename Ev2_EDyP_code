@@ -1,0 +1,241 @@
+import random
+import datetime
+import csv
+import os
+import openpyxl
+
+
+#2022-10-20 20-10_2022 datetime.datetime(2022-10-20)
+diccionario_eventos={}
+clientes={}
+salas={}
+path='E:\fernando\programacion3'
+eventos=()
+libro= openpyxl.Workbook()
+libro.iso_dates= True
+hoja = libro['Sheet']
+hoja.title='1'
+
+cargar=input("¿Desea buscar datos anteriores?")
+if cargar == "S":
+    if os.path.exists('eventos.csv'):
+       datos_lectura=dict()
+       with open("salas.csv","r", newline="") as archivo:
+           lector = csv.reader(archivo)
+           next(lector)
+           for clave, nom,cupo in lector:
+               datos_lectura[int(clave)] = nom,cupo        
+           salas=datos_lectura
+        
+       datos_clientes=dict()
+       with open("clientes.csv","r", newline="") as archivo:
+           lector = csv.reader(archivo)
+           next(lector)
+           for matricula, cliente in lector:
+               datos_clientes[int(matricula)]= cliente
+               clientes=datos_clientes
+               
+
+       
+       datos_eventos=dict()
+       with open("eventos.csv","r", newline="") as archivo:
+           lector = csv.reader(archivo)
+           next(lector)
+           for clave,nombre_evento,fechap,turno,registro_sala,cliente in lector:
+               fechap=datetime.datetime.strptime(fechap, "%Y-%m-%d").date()
+               datos_eventos[int(clave)]= nombre_evento,fechap,turno,registro_sala,cliente
+               
+           
+           
+           diccionario_eventos=datos_eventos            
+
+
+    else:
+        print("no existen datos anteriores")
+else:
+    print("Entendido")
+    
+while True:
+    print("Le damos la bienvenida, elija una de nuestras opciones de menú"
+    """
+    1:Reservaciones
+    2:Reportes
+    3:Registro de sala
+    4:Registro de un cliente
+    5:Salir
+    """)
+    orden=input("¿Qué operacion desea revisar\n")
+    
+    if orden=="1":
+        print("""
+    A:Registrar una nueva reservacion
+    B:Modificar una reservacion
+    C:Consultar la disponibilidad de una sala para una fecha
+        """)
+        reservaciones=input("¿Que desea realizar con las reservaciones?\n")
+        
+        if reservaciones == "A":        
+            cliente=int(input("Elija su clave de cliente\n"))
+            if cliente in clientes:        
+                fecha_actual=datetime.date.today()
+                #de aqui el codigo de alpha        
+                clave=max(list(diccionario_eventos.keys()),default=3)+1
+                nombre_evento=input("Nombre del evento\n")
+                turno=input("Seleccione el turno M/V/N\n")
+                print(salas)
+                registro_sala=int(input("¿En que sala desea registrar su evento?\n"))
+                print("Si despues de este aviso no pide la fecha la sala no existe")
+                #de vuelta al codigo original
+                try:
+                    if turno != "M" and turno !="V" and turno != "N":
+                        print("seleccione un turno valido")
+                    else:                                    
+                        for clave_salas in salas.items():
+                            if registro_sala != clave_salas[0]:
+                                print("")
+                            else:
+                                fecha=input("Que fecha desea que sea su evento? (dd/mm/aaaa): \n")
+                                fechap = datetime.datetime.strptime(fecha, "%d/%m/%Y").date()
+                                cant_dias = 2
+                                dia=fecha_actual.day
+                                dia_n=fechap.day
+                                eventos=(nombre_evento,fechap,turno,registro_sala,cliente)
+                                if fechap < fecha_actual:
+                                    print("La fecha que usted puso no se encuentra disponible")
+                                else:
+                                    if fecha_actual + datetime.timedelta(days=+cant_dias) <= fechap:
+                                       fecha_reservada = ""
+                                       turno_reservado = ""
+                                       for clave,valo in diccionario_eventos.items():                                            
+                                           if fechap == valo[1] and turno == valo[2] and registro_sala==valo[3]:
+                                               fecha_reservada = valo[1]
+                                               turno_reservado = valo[2]
+                                               sala_reservada  = valo[3]
+                                       if fechap == fecha_reservada and turno == turno_reservado and registro_sala == sala_reservada:
+                                           print("Ya existe una reservacion en ese turno,Favor de intentar en otro Turno:")
+                                        
+                                       else:
+                                           if fecha_actual + datetime.timedelta(days=+cant_dias) >= fechap: 
+                                               print("Se debe hacer una reservacion al menos 2 dias antes de su evento")
+                                           else:
+                                               clave=max(list(diccionario_eventos.keys()),default=0)+1
+                                               diccionario_eventos[clave] = eventos
+                                     
+                                    else:
+                                        if fecha_actual + datetime.timedelta(days=+cant_dias) >= fechap: 
+                                            print("Se debe hacer una reservacion al menos 2 dias antes de su evento")
+                                                                           
+                                                                    
+                except Exception:
+                    print("El formato de la fecha no es valido")
+            else:
+                print("necesita ser cliente para reservar una sala")
+                
+        else:
+            if reservaciones == "B":
+                print(diccionario_eventos)
+                clave=int(input("Ingrese la clave del evento que desea modificar\n"))
+                if clave in diccionario_eventos:
+                    nuevo_nombre=input("¿Cómo desea llamar a su evento?\n")
+                    eventos=(nuevo_nombre,fechap,turno,registro_sala,cliente)
+                    diccionario_eventos[clave]=eventos
+                    print(f"La sala se ha modificado y su nombre ahora es: {eventos[0]}")
+                else:
+                    print("Esta clave no esta registrada")
+            else:
+                if reservaciones=="C":
+                    print("")
+                
+                else:
+                    print("Seleccione una opcion valida")                
+    
+    if orden=="2":
+        print("""
+    A:Mostrar el reporte tabular
+    B:Exportar el reporte tabular
+        """)
+        reportes=input("¿Que desea realizar con los reportes?\n")
+        
+        if reportes == "A":                
+            lista_reservas=list(diccionario_eventos.items())
+            fecha_consulta=input("Ingrese la fecha que quiera verificar\n")
+            fecha_procesada=datetime.datetime.strptime(fecha_consulta, "%d/%m/%Y").date()
+            
+            print("*"*50)
+            print(f"**\tReporte del dia {fecha_procesada}\t **")
+            print("*"*50)
+            print("no_sala     clave del clientes    Nombre del evento     Turno ")
+            print("*"*50)
+            
+            for clave,valor in lista_reservas:
+                if valor[1] == fecha_procesada:
+                    
+                    print(valor[3],"          ",valor[4],"               ", valor[0],"                  ",valor[2])
+
+            print(f"**\t FIN DEL REPORTE \t **")
+            
+        else:
+            if reportes == "B":
+                lista_reservas=list(diccionario_eventos.items())
+                fecha_consulta=input("Ingrese la fecha del reprte que quiere exportar a excel\n")
+                fecha_procesada=datetime.datetime.strptime(fecha_consulta, "%d/%m/%Y").date()
+                hoja['B1'].value=f'Reporte tabular del dia {fecha_procesada}'
+                hoja['B3'].value='no_sala'
+                hoja['C3'].value='clave del cliente'
+                hoja['D3'].value='Nombre del evento'
+                hoja['E3'].value='Turno'
+                for clave,valor in lista_reservas:
+                    if valor[1] == fecha_procesada:
+                        hoja.cell(row=clave, column=2).value = valor[3]
+                        hoja.cell(row=clave, column=3).value = valor[4]
+                        hoja.cell(row=clave, column=4).value = valor[0]
+                        hoja.cell(row=clave, column=5).value = valor[2]
+                        
+                libro.save('libro_luna_de_pluton.xlsx')
+            else:
+                print("Seleccione una opción valida")
+                
+    if orden=="3":
+        clave_sala=max(list(salas.keys()),default=0)+1
+        nom=input("Escriba el nombre de la sala\n")
+        if (nom.isspace() or len(nom) <= 0):
+            print("El nombre no puede omitirse")
+        else:
+            cupo=input("Seleccione el cupo\n")
+            if (cupo.isspace() or len(cupo) <= 0):
+                print("El cupo no puede omitirse")
+            else:
+                if int(cupo) <= 0:
+                    print("El cupo debe ser mayor que 0")
+                else:
+                    Salas=(nom,cupo)
+                    salas[clave_sala]=Salas
+    
+    
+    if orden=="4":
+        matricula=max(list(clientes.keys()),default=2000)+1
+        cliente=input("Ingrese su nombre\n")
+        if (cliente.isspace() or len(cliente) <= 0):
+            print("El nombre no puede omitirse")
+        else:
+            clientes[matricula]={cliente}
+                  
+    if orden=="5":
+        archivo =open("eventos.csv","w", newline="")
+        grabador = csv.writer(archivo)
+        grabador.writerow(("Clave", "nombre_evento","fechap","turno","registro_sala","cliente"))
+        grabador.writerows([(clave, valor[0], valor[1], valor[2], valor[3], valor[4]) for clave,valor in diccionario_eventos.items()])
+        archivo.close()
+        
+        archivo =open("salas.csv","w", newline="")
+        grabador = csv.writer(archivo)
+        grabador.writerow(("Clave", "nombre_evento", "cupo"))
+        grabador.writerows([(clave, valor[0],valor[1]) for clave,valor in salas.items()])
+        archivo.close()
+        
+        archivo =open("clientes.csv","w", newline="")
+        grabador = csv.writer(archivo)
+        grabador.writerow(("Clave", "nombre"))
+        grabador.writerows([(clave, valor) for clave,valor in clientes.items()])
+        archivo.close()           
+        break
