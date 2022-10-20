@@ -43,7 +43,7 @@ if cargar == "S":
            next(lector)
            for clave,nombre_evento,fechap,turno,registro_sala,cliente in lector:
                fechap=datetime.datetime.strptime(fechap, "%Y-%m-%d").date()
-               datos_eventos[int(clave)]= nombre_evento,fechap,turno,registro_sala,cliente
+               datos_eventos[int(clave)]= nombre_evento,fechap,turno,int(registro_sala),cliente
                
            
            
